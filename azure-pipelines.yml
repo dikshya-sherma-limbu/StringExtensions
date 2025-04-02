@@ -1,0 +1,45 @@
+trigger:
+- main
+
+pool:
+  name: SelfHosted
+
+variables:
+  buildConfiguration: 'Release'
+  Major: '1'
+  Minor: '0'
+  Patch: '0'
+  PackageVersion: '$(Major).$(Minor).$(Patch)'
+
+steps:
+- task: DotNetCoreCLI@2
+  displayName: 'Restore'
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+    feedsToUse: 'select'
+    vstsFeed: 'StringExtensionsPackages'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Build'
+  inputs:
+    command: 'build'
+    projects: '**/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Pack'
+  inputs:
+    command: 'pack'
+    packagesToPack: '**/StringExtensions.csproj'
+    versioningScheme: 'byEnvVar'
+    versionEnvVar: 'PackageVersion'
+    outputDir: '$(Build.ArtifactStagingDirectory)'
+
+- task: NuGetCommand@2
+  displayName: 'Push'
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: 'StringExtensionsPackages'
