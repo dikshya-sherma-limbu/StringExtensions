@@ -21,7 +21,7 @@ steps:
   displayName: 'dotnet restore'
   inputs:
     command: 'restore'
-    projects: '$(solution)''
+    projects: '$(solution)'
 
 - task: VSBuild@1
   inputs:
